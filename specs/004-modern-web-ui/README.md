@@ -1,5 +1,5 @@
 ---
-status: planned
+status: in-progress
 created: '2025-11-20'
 tags:
   - frontend
