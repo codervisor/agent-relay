@@ -30,6 +30,8 @@ export class TerminalWebSocket {
   private onDataCallback?: (data: ArrayBuffer) => void;
   private onErrorCallback?: (error: string) => void;
   private onCloseCallback?: () => void;
+  private manuallyClosed = false;
+  private hasOpened = false;
 
   constructor(runnerID: string, sessionID: string) {
     this.runnerID = runnerID;
@@ -49,9 +51,12 @@ export class TerminalWebSocket {
       try {
         this.ws = new WebSocket(this.url);
         this.ws.binaryType = 'arraybuffer';
+        this.manuallyClosed = false;
+        this.hasOpened = false;
 
         this.ws.onopen = () => {
           console.log('[WS] Connected to HQ');
+          this.hasOpened = true;
           
           // Send start_session message
           this.sendMessage({
@@ -84,14 +89,20 @@ export class TerminalWebSocket {
 
         this.ws.onerror = (event) => {
           console.error('[WS] WebSocket error:', event);
+          if (this.manuallyClosed) {
+            return;
+          }
           if (this.onErrorCallback) {
             this.onErrorCallback('WebSocket connection error');
           }
-          reject(new Error('WebSocket connection failed'));
+          if (!this.hasOpened) {
+            reject(new Error('WebSocket connection failed'));
+          }
         };
 
         this.ws.onclose = () => {
           console.log('[WS] Disconnected from HQ');
+          this.ws = null;
           if (this.onCloseCallback) {
             this.onCloseCallback();
           }
@@ -163,6 +174,7 @@ export class TerminalWebSocket {
    */
   close(): void {
     if (this.ws) {
+      this.manuallyClosed = true;
       this.ws.close();
       this.ws = null;
     }

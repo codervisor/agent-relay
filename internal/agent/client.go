@@ -19,6 +19,7 @@ type Client struct {
 	conn      *websocket.Conn
 	sessions  map[string]*PTY
 	mu        sync.RWMutex
+	writeMu   sync.Mutex
 	reconnect bool
 	closed    bool
 }
@@ -65,7 +66,7 @@ func (c *Client) register() error {
 		},
 	}
 
-	if err := c.conn.WriteJSON(msg); err != nil {
+	if err := c.writeJSON(msg); err != nil {
 		return fmt.Errorf("failed to send registration: %w", err)
 	}
 
@@ -258,7 +259,7 @@ func (c *Client) streamPTYOutput(pty *PTY) {
 
 		fullData := append(paddedSession, data...)
 
-		if err := c.conn.WriteMessage(websocket.BinaryMessage, fullData); err != nil {
+		if err := c.writeMessage(websocket.BinaryMessage, fullData); err != nil {
 			log.Printf("[Client] Failed to send PTY output: %v", err)
 			break
 		}
@@ -273,7 +274,7 @@ func (c *Client) sendSessionStarted(sessionID string) {
 			SessionID: sessionID,
 		},
 	}
-	c.conn.WriteJSON(msg)
+	c.writeJSON(msg)
 }
 
 // sendSessionEnded sends a session_ended message
@@ -285,7 +286,7 @@ func (c *Client) sendSessionEnded(sessionID string, exitCode int) {
 			ExitCode:  exitCode,
 		},
 	}
-	c.conn.WriteJSON(msg)
+	c.writeJSON(msg)
 }
 
 // sendError sends an error message
@@ -296,7 +297,21 @@ func (c *Client) sendError(sessionID, errMsg string) {
 			Message: errMsg,
 		},
 	}
-	c.conn.WriteJSON(msg)
+	c.writeJSON(msg)
+}
+
+// writeJSON serializes access to the websocket connection for JSON messages
+func (c *Client) writeJSON(msg protocol.Message) error {
+	c.writeMu.Lock()
+	defer c.writeMu.Unlock()
+	return c.conn.WriteJSON(msg)
+}
+
+// writeMessage serializes access to the websocket connection for binary frames
+func (c *Client) writeMessage(messageType int, data []byte) error {
+	c.writeMu.Lock()
+	defer c.writeMu.Unlock()
+	return c.conn.WriteMessage(messageType, data)
 }
 
 // Close gracefully shuts down the client

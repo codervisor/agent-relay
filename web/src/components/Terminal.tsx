@@ -10,13 +10,23 @@ interface TerminalProps {
   sessionID?: string;
 }
 
-export const Terminal: React.FC<TerminalProps> = ({ runnerID, sessionID = crypto.randomUUID() }) => {
+export const Terminal: React.FC<TerminalProps> = ({ runnerID, sessionID }) => {
   const terminalRef = useRef<HTMLDivElement>(null);
   const xtermRef = useRef<XTerm | null>(null);
   const fitAddonRef = useRef<FitAddon | null>(null);
   const wsRef = useRef<TerminalWebSocket | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [connected, setConnected] = useState(false);
+  const stableSessionIDRef = useRef<string>(sessionID ?? crypto.randomUUID());
+
+  // Keep session ID stable unless an explicit one is provided and changes
+  useEffect(() => {
+    if (sessionID && sessionID !== stableSessionIDRef.current) {
+      stableSessionIDRef.current = sessionID;
+    }
+  }, [sessionID]);
+
+  const stableSessionID = stableSessionIDRef.current;
 
   useEffect(() => {
     if (!terminalRef.current) return;
@@ -47,7 +57,7 @@ export const Terminal: React.FC<TerminalProps> = ({ runnerID, sessionID = crypto
     fitAddonRef.current = fitAddon;
 
     // Create WebSocket connection
-    const ws = new TerminalWebSocket(runnerID, sessionID);
+    const ws = new TerminalWebSocket(runnerID, stableSessionID);
     wsRef.current = ws;
 
     // Handle PTY output
@@ -71,6 +81,7 @@ export const Terminal: React.FC<TerminalProps> = ({ runnerID, sessionID = crypto
     // Connect to HQ
     ws.connect()
       .then(() => {
+        setError(null);
         setConnected(true);
         term.writeln('\x1b[32mConnected to runner\x1b[0m\r\n');
       })
@@ -105,7 +116,7 @@ export const Terminal: React.FC<TerminalProps> = ({ runnerID, sessionID = crypto
       ws.close();
       term.dispose();
     };
-  }, [runnerID, sessionID]);
+  }, [runnerID, stableSessionID]);
 
   return (
     <div className="flex flex-col h-full">
