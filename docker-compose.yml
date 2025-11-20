@@ -1,0 +1,22 @@
+version: '3.8'
+
+services:
+  hq:
+    build:
+      context: .
+      dockerfile: Dockerfile.hq
+    ports:
+      - "8080:8080"
+    environment:
+      - PORT=8080
+    restart: unless-stopped
+
+  web:
+    build:
+      context: ./web
+      dockerfile: Dockerfile
+    ports:
+      - "3000:3000"
+    depends_on:
+      - hq
+    restart: unless-stopped

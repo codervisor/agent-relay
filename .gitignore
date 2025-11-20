@@ -30,3 +30,16 @@ go.work.sum
 # Editor/IDE
 # .idea/
 # .vscode/
+
+# Temporary files
+*.tmp
+*.temp
+tmp/
+
+# Node.js dependencies and build artifacts
+node_modules/
+dist/
+build/
+
+# Logs
+*.log
