@@ -51,7 +51,7 @@ Update frontend architecture to use Next.js for SSR and shadcn/ui for the compon
   - [ ] Run `npx shadcn-ui@latest init`.
   - [ ] Configure `components.json` for Vite.
   - [ ] Install first components (e.g., Button, Card).
-- [ ] **Add SSR Support** (Optional Phase)
+- [ ] **Add SSR Support**
   - [ ] Install Vike (`npm install vike`).
   - [ ] Configure SSR routes and rendering.
   - [ ] Adapt `Terminal.tsx` for SSR (client-only rendering where needed).
