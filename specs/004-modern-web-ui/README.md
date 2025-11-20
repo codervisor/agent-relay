@@ -1,5 +1,5 @@
 ---
-status: in-progress
+status: complete
 created: '2025-11-20'
 tags:
   - frontend
