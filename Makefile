@@ -1,4 +1,4 @@
-.PHONY: help build build-web run-hq run-runner run-web clean test
+.PHONY: help build build-web run-hq run-runner run-web clean test verify
 
 help:
 	@echo "AgentRelay Makefile"
@@ -8,6 +8,7 @@ help:
 	@echo "run-hq       - Run the HQ server"
 	@echo "run-runner   - Run the Runner"
 	@echo "run-web      - Run the web frontend dev server"
+	@echo "verify       - Verify system is running correctly"
 	@echo "clean        - Remove built binaries"
 	@echo "test         - Run tests"
 
@@ -20,17 +21,20 @@ build:
 
 build-web:
 	@echo "Building web frontend..."
-	@cd web && npm run build
+	@cd web && pnpm run build
 	@echo "Web build complete!"
 
 run-hq:
-	@go run ./cmd/hq
+	@./bin/hq
 
 run-runner:
-	@go run ./cmd/runner
+	@./bin/runner --runner-id $${RUNNER_ID:-local-runner} --token $${RUNNER_TOKEN:-dev-token}
 
 run-web:
-	@cd web && npm run dev
+	@cd web && pnpm run dev
+
+verify:
+	@./scripts/verify.sh
 
 clean:
 	@rm -rf bin/

@@ -12,10 +12,22 @@ AgentRelay uses a reverse-connection architecture where Runners dial the HQ serv
 
 ## Quick Start
 
+### Prerequisites
+
+- Go 1.23+
+- Node.js 18+ and pnpm
+- Linux/macOS (PTY support required)
+
 ### Build
 
 ```bash
 make build
+```
+
+Or manually:
+```bash
+go build -o bin/hq ./cmd/hq
+go build -o bin/runner ./cmd/runner
 ```
 
 ### Run HQ Server
@@ -23,29 +35,55 @@ make build
 ```bash
 make run-hq
 # or
-go run ./cmd/hq
+./bin/hq
 ```
+
+HQ will start on port 8080 by default. You can change this with the `PORT` environment variable.
 
 ### Run Runner
 
 ```bash
 make run-runner
 # or
-go run ./cmd/runner
+./bin/runner --runner-id my-runner --token dev-token
 ```
+
+**Configuration options:**
+- `--hq-url`: WebSocket URL of HQ (default: `ws://localhost:8080/ws/runner`)
+- `--runner-id`: Unique identifier for this runner (default: hostname)
+- `--token`: Authentication token (default: "dev-token")
+
+**Environment variables:**
+- `HQ_URL`: Same as --hq-url
+- `RUNNER_ID`: Same as --runner-id
+- `RUNNER_TOKEN`: Same as --token
 
 ### Run Frontend
 
 ```bash
 cd web
-npm run dev
+pnpm install
+pnpm dev
 ```
+
+Frontend will be available at http://localhost:5173 (or next available port).
 
 ### Docker Compose
 
 ```bash
 docker-compose up
 ```
+
+## Testing the System
+
+1. **Start HQ**: `./bin/hq`
+2. **Start Runner**: `./bin/runner --runner-id test-runner --token dev-token`
+3. **Start Frontend**: `cd web && pnpm dev`
+4. **Open browser** to http://localhost:5173
+5. **Select runner** from the list
+6. **Click Connect** to start a terminal session
+
+You should see a bash terminal that accepts input and displays output in real-time.
 
 ## Project Structure
 
