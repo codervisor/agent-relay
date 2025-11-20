@@ -2,7 +2,7 @@
 
 ## Project: agent-relay
 
-Lightweight spec methodology for AI-powered development.
+AgentRelay is a lightweight, self-hosted orchestration platform for AI coding agents.
 
 ## Core Rules
 

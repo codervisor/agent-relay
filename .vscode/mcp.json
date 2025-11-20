@@ -1,0 +1,14 @@
+{
+	"servers": {
+		"lean-spec": {
+			"type": "stdio",
+			"command": "npx",
+			"args": [
+				"@leanspec/mcp@0.2.5"
+			],
+			"cwd": "${workspaceFolder}",
+			"env": {}
+		}
+	},
+	"inputs": []
+}
